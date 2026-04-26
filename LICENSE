@@ -1,0 +1,38 @@
+Zabbix Frontend Plugin para Claude Code
+Copyright (c) 2026 Matheus Andrade
+
+LICENÇA COMERCIAL
+
+Este software é proprietário. O uso é permitido apenas mediante assinatura
+ativa adquirida em https://zabbix-frontend.dev/pricing.
+
+DIREITOS CONCEDIDOS COM ASSINATURA ATIVA:
+- Usar o plugin em projetos pessoais e comerciais
+- Instalar em até 5 máquinas (Free), 10 (Pro) ou ilimitado (Enterprise)
+- Receber atualizações durante o período da assinatura
+- Suporte conforme plano contratado
+
+PROIBIÇÕES:
+- Redistribuir, revender ou sublicenciar o plugin
+- Compartilhar a chave de licença com terceiros
+- Fazer engenharia reversa do MCP server de validação
+- Remover ou modificar o sistema de licenciamento
+- Usar o plugin após o término da assinatura
+
+A chave de licença é vinculada ao email do comprador. Tentativas de
+contornar a validação resultam em revogação imediata sem reembolso.
+
+CÓDIGO PARCIALMENTE OPEN-SOURCE:
+- Skills (skills/) — visíveis para auditoria, não redistribuíveis
+- MCP Server cliente — código aberto para confiabilidade
+- Backend de licença — proprietário, não distribuído
+
+GARANTIA:
+O software é fornecido "no estado em que se encontra", sem garantias.
+O autor não se responsabiliza por danos diretos ou indiretos.
+
+LEGISLAÇÃO APLICÁVEL:
+Lei brasileira. Foro: Comarca do autor.
+
+Para licenciamento OEM ou enterprise customizado, contate:
+matheeuus22@gmail.com

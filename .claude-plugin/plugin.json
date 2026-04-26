@@ -1,0 +1,67 @@
+{
+  "name": "zabbix-frontend",
+  "version": "1.0.0",
+  "description": "Crie módulos e widgets de frontend Zabbix em minutos com Claude Code. Templates oficiais (manifest.json v2.0, CModule, CWidget), validação automática de classes CSS, temas Zabbix nativos e boas práticas de segurança (CSRF, escaping, permissões).",
+  "author": {
+    "name": "Matheus Andrade",
+    "email": "matheeuus22@gmail.com",
+    "url": "https://zabbix-frontend.dev"
+  },
+  "homepage": "https://zabbix-frontend.dev",
+  "repository": "https://github.com/matheusandrades/zabbix-frontend-plugin",
+  "license": "Commercial",
+  "keywords": [
+    "zabbix",
+    "frontend",
+    "monitoring",
+    "dashboard",
+    "widget",
+    "module",
+    "php",
+    "observability"
+  ],
+  "categories": [
+    "monitoring",
+    "frontend",
+    "development"
+  ],
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "commands": "./commands/",
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.json",
+  "userConfig": {
+    "license_key": {
+      "type": "string",
+      "title": "Chave de licença",
+      "description": "Chave recebida por email após assinatura em https://zabbix-frontend.dev/pricing",
+      "sensitive": true
+    },
+    "zabbix_version": {
+      "type": "string",
+      "title": "Versão do Zabbix alvo",
+      "description": "Versão LTS para qual gerar código (afeta manifest e APIs disponíveis)",
+      "default": "7.0",
+      "enum": ["6.0", "6.4", "7.0", "7.2"]
+    },
+    "tier": {
+      "type": "string",
+      "title": "Plano de assinatura",
+      "description": "Detectado automaticamente via license_key",
+      "default": "free",
+      "enum": ["free", "pro", "enterprise"]
+    },
+    "auto_validate": {
+      "type": "boolean",
+      "title": "Validação automática",
+      "description": "Executar validador Zabbix após cada edição de arquivo",
+      "default": true
+    },
+    "namespace_prefix": {
+      "type": "string",
+      "title": "Prefixo de namespace",
+      "description": "Prefixo PHP usado em manifest.json:namespace (ex: \"Acme\")",
+      "default": "MyOrg"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+    "manifest_version": 2.0,
+    "id": "{{VENDOR}}.{{MODULE_ID}}",
+    "name": "{{MODULE_NAME}}",
+    "namespace": "{{NAMESPACE}}",
+    "version": "1.0.0",
+    "author": "{{AUTHOR}}",
+    "description": "{{DESCRIPTION}}",
+    "url": "{{URL}}",
+    "actions": {
+        "{{ACTION_KEY}}.view": {
+            "class": "{{ACTION_CLASS}}View",
+            "view": "{{ACTION_KEY}}.view"
+        }
+    }
+}

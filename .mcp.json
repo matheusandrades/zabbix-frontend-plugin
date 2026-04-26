@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "license-validator": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/servers/license-server/index.js"],
+      "env": {
+        "ZABBIX_PLUGIN_API_URL": "https://api.zabbix-frontend.dev",
+        "LICENSE_KEY": "${CLAUDE_USER_CONFIG_license_key}"
+      }
+    }
+  }
+}

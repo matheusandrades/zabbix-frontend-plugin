@@ -1,0 +1,29 @@
+/*
+ * CSS para widget {{WIDGET_NAME}}
+ *
+ * REGRAS:
+ * 1. Prefixe TODAS as classes com .dashboard-widget-{{ID_WITH_HYPHENS}}
+ * 2. Use SEMPRE variáveis CSS Zabbix (var(--*)) — nunca cores hardcoded
+ * 3. Suporte a 6 temas: blue, dark, blue-classic, dark-classic, hc-light, hc-dark
+ */
+
+.dashboard-widget-{{ID_WITH_HYPHENS}} {
+    /* Container raiz do widget */
+}
+
+.dashboard-widget-{{ID_WITH_HYPHENS}}__row {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--font-color);
+}
+
+.dashboard-widget-{{ID_WITH_HYPHENS}}__row:hover {
+    background: var(--bg-color-secondary);
+}
+
+.dashboard-widget-{{ID_WITH_HYPHENS}}--loading {
+    opacity: 0.6;
+    pointer-events: none;
+}

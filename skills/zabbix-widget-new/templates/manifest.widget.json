@@ -1,0 +1,28 @@
+{
+    "manifest_version": 2.0,
+    "id": "{{VENDOR}}.{{WIDGET_ID}}",
+    "type": "widget",
+    "name": "{{WIDGET_NAME}}",
+    "namespace": "{{NAMESPACE}}",
+    "version": "1.0.0",
+    "author": "{{AUTHOR}}",
+    "description": "{{DESCRIPTION}}",
+    "url": "{{URL}}",
+    "widget": {
+        "size": {"width": 12, "height": 5},
+        "js_class": "CWidget{{WIDGET_CLASS}}",
+        "refresh_rate": 60,
+        "template_support": true,
+        "in": {},
+        "out": []
+    },
+    "actions": {
+        "widget.{{VENDOR}}.{{WIDGET_ID}}.view": {
+            "class": "WidgetView"
+        }
+    },
+    "assets": {
+        "js": ["class.widget.js"],
+        "css": ["widget.css"]
+    }
+}
