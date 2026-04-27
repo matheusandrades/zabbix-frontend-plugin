@@ -2,26 +2,22 @@
 /**
  * MCP server de validação de licença para o plugin Zabbix Frontend.
  *
- * Expõe ferramentas:
- *   - validate_license: confirma licença ativa contra backend
- *   - check_feature_access: verifica se feature específica está liberada no plano
+ * Implementação MCP zero-dependency (apenas Node stdlib).
+ * Protocolo: JSON-RPC 2.0 sobre stdio, uma mensagem por linha.
  *
- * Backend esperado em ZABBIX_PLUGIN_API_URL (default https://api.zabbix-frontend.dev)
+ * Tools expostas:
+ *   - validate_license: confirma licença ativa contra backend
+ *   - check_feature_access: verifica se feature está liberada no plano
  */
 
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-    CallToolRequestSchema,
-    ListToolsRequestSchema,
-} from "@modelcontextprotocol/sdk/types.js";
+import { createInterface } from "node:readline";
 
 const API_URL = process.env.ZABBIX_PLUGIN_API_URL || "https://api.zabbix-frontend.dev";
 const ENV_LICENSE = process.env.LICENSE_KEY || "";
 
 // Cache em memória — evita hit no backend a cada call
 const cache = new Map();
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 const TIER_FEATURES = {
     free: [
@@ -57,6 +53,44 @@ const TIER_FEATURES = {
         "schema-validation",
     ],
 };
+
+const TOOLS = [
+    {
+        name: "validate_license",
+        description:
+            "Valida a chave de licença contra o backend. Retorna {valid, tier, expires_at, features}. Use no início de skills premium para verificar autorização.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                license_key: {
+                    type: "string",
+                    description:
+                        "Chave de licença. Se omitida, usa a configurada em LICENSE_KEY.",
+                },
+            },
+        },
+    },
+    {
+        name: "check_feature_access",
+        description:
+            "Verifica se uma feature específica (skill, agent) está disponível no plano atual. Retorna {allowed, tier, required_tier}.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                feature: {
+                    type: "string",
+                    description:
+                        "Nome da feature (ex: 'zabbix-best-practices', 'zabbix-refactor', 'zabbix-optimizer').",
+                },
+                license_key: {
+                    type: "string",
+                    description: "Chave de licença (opcional, usa env se omitida).",
+                },
+            },
+            required: ["feature"],
+        },
+    },
+];
 
 async function callBackend(licenseKey) {
     if (!licenseKey) {
@@ -97,68 +131,23 @@ async function callBackend(licenseKey) {
     }
 }
 
-const server = new Server(
-    {
-        name: "zabbix-frontend-license-validator",
-        version: "1.0.0",
-    },
-    {
-        capabilities: {
-            tools: {},
-        },
-    }
-);
+function send(message) {
+    process.stdout.write(JSON.stringify(message) + "\n");
+}
 
-server.setRequestHandler(ListToolsRequestSchema, async () => ({
-    tools: [
-        {
-            name: "validate_license",
-            description:
-                "Valida a chave de licença contra o backend. Retorna {valid, tier, expires_at, features}. Use no início de skills premium para verificar autorização.",
-            inputSchema: {
-                type: "object",
-                properties: {
-                    license_key: {
-                        type: "string",
-                        description:
-                            "Chave de licença. Se omitida, usa a configurada em LICENSE_KEY.",
-                    },
-                },
-                required: [],
-            },
-        },
-        {
-            name: "check_feature_access",
-            description:
-                "Verifica se uma feature específica (skill, agent) está disponível no plano atual. Retorna {allowed, tier, required_tier}.",
-            inputSchema: {
-                type: "object",
-                properties: {
-                    feature: {
-                        type: "string",
-                        description:
-                            "Nome da feature (ex: 'zabbix-best-practices', 'zabbix-refactor', 'zabbix-optimizer').",
-                    },
-                    license_key: {
-                        type: "string",
-                        description: "Chave de licença (opcional, usa env se omitida).",
-                    },
-                },
-                required: ["feature"],
-            },
-        },
-    ],
-}));
+function sendResult(id, result) {
+    send({ jsonrpc: "2.0", id, result });
+}
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    const { name, arguments: args } = request.params;
+function sendError(id, code, message) {
+    send({ jsonrpc: "2.0", id, error: { code, message } });
+}
 
+async function handleToolCall(name, args) {
     if (name === "validate_license") {
         const key = args?.license_key || ENV_LICENSE;
         const result = await callBackend(key);
-
         const features = TIER_FEATURES[result.tier] || TIER_FEATURES.free;
-
         return {
             content: [
                 {
@@ -182,10 +171,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 content: [
                     {
                         type: "text",
-                        text: JSON.stringify({
-                            allowed: false,
-                            error: "feature parameter required",
-                        }),
+                        text: JSON.stringify({ allowed: false, error: "feature parameter required" }),
                     },
                 ],
                 isError: true,
@@ -194,7 +180,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         const key = args?.license_key || ENV_LICENSE;
         const result = await callBackend(key);
-
         const tier = result.tier || "free";
         const features = TIER_FEATURES[tier] || TIER_FEATURES.free;
         const allowed = features.includes(feature);
@@ -211,34 +196,74 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             content: [
                 {
                     type: "text",
-                    text: JSON.stringify({
-                        allowed,
-                        tier,
-                        required_tier: requiredTier,
-                        feature,
-                    }),
+                    text: JSON.stringify({ allowed, tier, required_tier: requiredTier, feature }),
                 },
             ],
         };
     }
 
-    return {
-        content: [
-            {
-                type: "text",
-                text: `Unknown tool: ${name}`,
-            },
-        ],
-        isError: true,
-    };
-});
-
-async function main() {
-    const transport = new StdioServerTransport();
-    await server.connect(transport);
+    throw new Error(`Unknown tool: ${name}`);
 }
 
-main().catch((err) => {
-    console.error("Fatal error:", err);
-    process.exit(1);
+async function handleMessage(msg) {
+    const { id, method, params } = msg;
+
+    try {
+        switch (method) {
+            case "initialize":
+                sendResult(id, {
+                    protocolVersion: "2024-11-05",
+                    capabilities: { tools: {} },
+                    serverInfo: {
+                        name: "zabbix-frontend-license-validator",
+                        version: "1.0.0",
+                    },
+                });
+                break;
+
+            case "notifications/initialized":
+                // Notification, no response needed
+                break;
+
+            case "tools/list":
+                sendResult(id, { tools: TOOLS });
+                break;
+
+            case "tools/call": {
+                const result = await handleToolCall(params?.name, params?.arguments);
+                sendResult(id, result);
+                break;
+            }
+
+            case "ping":
+                sendResult(id, {});
+                break;
+
+            default:
+                if (id !== undefined) {
+                    sendError(id, -32601, `Method not found: ${method}`);
+                }
+        }
+    } catch (err) {
+        if (id !== undefined) {
+            sendError(id, -32603, `Internal error: ${err.message}`);
+        }
+    }
+}
+
+const rl = createInterface({ input: process.stdin, crlfDelay: Infinity });
+
+rl.on("line", (line) => {
+    const trimmed = line.trim();
+    if (!trimmed) return;
+    try {
+        const msg = JSON.parse(trimmed);
+        handleMessage(msg);
+    } catch (err) {
+        // Linha inválida — ignorar (não há como responder a JSON malformado)
+    }
+});
+
+rl.on("close", () => {
+    process.exit(0);
 });

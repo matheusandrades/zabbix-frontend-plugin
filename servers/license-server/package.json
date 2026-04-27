@@ -1,14 +1,11 @@
 {
   "name": "zabbix-frontend-license-server",
   "version": "1.0.0",
-  "description": "MCP server que valida licenças do plugin Zabbix Frontend contra backend remoto",
+  "description": "MCP server zero-dependency que valida licenças do plugin Zabbix Frontend contra backend remoto",
   "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0"
   },
   "engines": {
     "node": ">=18"
