@@ -20,16 +20,6 @@
     "php",
     "observability"
   ],
-  "categories": [
-    "monitoring",
-    "frontend",
-    "development"
-  ],
-  "skills": "./skills/",
-  "agents": "./agents/",
-  "commands": "./commands/",
-  "hooks": "./hooks/hooks.json",
-  "mcpServers": "./.mcp.json",
   "userConfig": {
     "license_key": {
       "type": "string",
@@ -40,16 +30,14 @@
     "zabbix_version": {
       "type": "string",
       "title": "Versão do Zabbix alvo",
-      "description": "Versão LTS para qual gerar código (afeta manifest e APIs disponíveis)",
-      "default": "7.0",
-      "enum": ["6.0", "6.4", "7.0", "7.2"]
+      "description": "Versão LTS para qual gerar código. Valores válidos: 6.0, 6.4, 7.0, 7.2",
+      "default": "7.0"
     },
     "tier": {
       "type": "string",
       "title": "Plano de assinatura",
-      "description": "Detectado automaticamente via license_key",
-      "default": "free",
-      "enum": ["free", "pro", "enterprise"]
+      "description": "Detectado automaticamente via license_key. Valores: free, pro, enterprise",
+      "default": "free"
     },
     "auto_validate": {
       "type": "boolean",
