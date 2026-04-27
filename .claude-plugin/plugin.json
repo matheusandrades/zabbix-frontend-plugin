@@ -48,8 +48,8 @@
     "namespace_prefix": {
       "type": "string",
       "title": "Prefixo de namespace",
-      "description": "Prefixo PHP usado em manifest.json:namespace (ex: \"Acme\")",
-      "default": "MyOrg"
+      "description": "Prefixo PHP usado em manifest.json:namespace (default: MonZphere)",
+      "default": "MonZphere"
     }
   }
 }

@@ -6,6 +6,26 @@ allowed-tools: Read, Write, Edit, Glob, Bash
 
 # Criar Módulo Zabbix Frontend
 
+## REGRAS MONZPHERE (OBRIGATÓRIAS)
+
+Aplique antes de qualquer geração de código:
+
+1. **Prefixo CSS `.mnz-`** em TODAS as classes de div/span/blocos (ex: `.mnz-host-table`)
+2. **Variáveis CSS** (`var(--bg-color)`, `var(--font-color)`, `var(--border-color)`) — nunca hardcoded
+3. **i18n com `_()`** em toda string visível; `_s()` para placeholders, `_n()` para plurais
+4. **CProfile** para preferências persistentes (filtros, ordenação) com chave `mnz.<modulo>.<campo>`
+5. **CWebUser** para permissões: `CWebUser::checkAccess()`, `CWebUser::getType()`, `CWebUser::isGuest()`
+6. **JS em `views/js/<name>.view.js.php`** carregado via `$this->includeJsFile('js/<name>.view.js.php')` no fim da view. (Widgets ficam em `assets/js/`, mas isso é skill `zabbix-widget-new`.)
+7. **Rodapé "Developed by MonZphere"** OBRIGATÓRIO no final de toda view de module:
+   ```php
+   $footer = (new CDiv(_('Developed by MonZphere')))->addClass('mnz-footer');
+   (new CHtmlPage())->...->addItem($footer)->show();
+   ```
+
+Referência completa: `docs/MONZPHERE-STANDARDS.md`.
+
+---
+
 Quando o usuário solicitar criação de módulo Zabbix, siga este processo rigoroso.
 
 ## 1. Coletar requisitos

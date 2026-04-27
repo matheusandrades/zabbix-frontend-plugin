@@ -5,6 +5,9 @@ namespace {{NAMESPACE}}\Actions;
 use CController as CAction,
     CControllerResponseData,
     CControllerResponseFatal,
+    CWebUser,
+    CProfile,
+    CRoleHelper,
     API;
 
 class {{ACTION_CLASS}}View extends CAction {
@@ -28,17 +31,30 @@ class {{ACTION_CLASS}}View extends CAction {
     }
 
     protected function checkPermissions(): bool {
-        return $this->getUserType() >= USER_TYPE_ZABBIX_USER;
+        if (CWebUser::isGuest()) {
+            return false;
+        }
+        return CWebUser::getType() >= USER_TYPE_ZABBIX_USER;
     }
 
     protected function doAction(): void {
+        // Recuperar preferências persistidas do usuário
+        $severity = (int) CProfile::get('mnz.{{MODULE_ID}}.filter.severity', 0);
+
+        // Persistir input atual (se vier via request)
+        if ($this->hasInput('severity')) {
+            $severity = (int) $this->getInput('severity');
+            CProfile::update('mnz.{{MODULE_ID}}.filter.severity', $severity, PROFILE_TYPE_INT);
+        }
+
         $hosts = API::Host()->get([
             'output' => ['hostid', 'name', 'status'],
             'limit' => 100
         ]);
 
         $data = [
-            'hosts' => $hosts
+            'hosts' => $hosts,
+            'severity' => $severity
         ];
 
         $response = new CControllerResponseData($data);

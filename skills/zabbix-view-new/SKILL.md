@@ -6,6 +6,31 @@ allowed-tools: Read, Write, Edit, Glob, Bash
 
 # Criar View Zabbix
 
+## REGRAS MONZPHERE (OBRIGATÓRIAS)
+
+Aplique em TODA view gerada:
+
+1. **Prefixo `.mnz-` em todas as classes** (`(new CDiv(...))->addClass('mnz-host-card')`)
+2. **i18n com `_()`** em toda string
+3. **JS em `views/js/<name>.view.js.php`** carregado no fim:
+   ```php
+   $this->includeJsFile('js/host.report.view.js.php');
+   ```
+4. **Rodapé "Developed by MonZphere"** OBRIGATÓRIO antes de `->show()` em views de **módulos**:
+   ```php
+   $footer = (new CDiv(_('Developed by MonZphere')))->addClass('mnz-footer');
+   (new CHtmlPage())->setTitle(_('...'))
+       ->addItem($content)
+       ->addItem($footer)
+       ->show();
+   ```
+   **EXCEÇÃO:** Views de **widgets** (`widget.view.php`) NÃO incluem o rodapé — usar `CWidgetView` em vez de `CHtmlPage`.
+5. **Variáveis CSS** (`var(--bg-color)`, etc.) — nunca hardcoded
+
+Referência completa: `docs/MONZPHERE-STANDARDS.md`.
+
+---
+
 Views no Zabbix são arquivos PHP que recebem `$data` da action e usam helpers HTML para gerar markup. **NUNCA concatene strings HTML** — use sempre os helpers, que fazem escaping automático.
 
 ## 1. Estrutura de uma view

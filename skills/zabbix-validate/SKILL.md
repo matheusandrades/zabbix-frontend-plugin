@@ -241,6 +241,91 @@ for f in actions/*.php; do
 done
 ```
 
+## 14b. Padrões MonZphere
+
+### CSS prefix `.mnz-`
+```bash
+# Toda classe CSS deve começar com .mnz-
+for css in $(find . -name "*.css"); do
+    grep -E "^\.[a-zA-Z]" "$css" | grep -v "^\.mnz-" | while read line; do
+        echo "FAIL: $css: '$line' não tem prefixo .mnz-"
+    done
+done
+
+# Em PHP — addClass deve ser .mnz-* ou ZBX_STYLE_* / ZBX_ICON_*
+grep -rn "addClass(['\"][a-z]" --include="*.php" | grep -v "addClass(['\"]mnz-" | grep -v "addClass(ZBX_" | while read line; do
+    echo "WARN: $line — addClass deve usar prefixo mnz- ou constante ZBX_"
+done
+```
+
+### Permissões via CWebUser
+```bash
+for f in actions/*.php; do
+    [ -f "$f" ] || continue
+    if grep -q "function checkPermissions" "$f"; then
+        if grep -A 5 "function checkPermissions" "$f" | grep -qE '\$this->getUserType'; then
+            echo "WARN: $f usa \$this->getUserType — prefira CWebUser::getType()"
+        fi
+    fi
+done
+```
+
+### CProfile para estado
+```bash
+# Detectar uso de session/cookie em vez de CProfile
+grep -rn "session_start\|\$_SESSION\|setcookie" --include="*.php" actions/ 2>/dev/null | while read line; do
+    echo "FAIL: $line — usar CProfile para estado persistente do usuário"
+done
+
+# CProfile keys devem prefixar com mnz.
+grep -rn "CProfile::get\|CProfile::update" --include="*.php" | grep -v "mnz\." | while read line; do
+    echo "WARN: $line — chave CProfile deve prefixar com 'mnz.<modulo>.'"
+done
+```
+
+### Footer "Developed by MonZphere" em modules
+```bash
+# Apenas para módulos (não widgets) — detectar por presença de CHtmlPage
+for view in views/*.php; do
+    [ -f "$view" ] || continue
+    if grep -q "CHtmlPage" "$view"; then
+        if ! grep -q "Developed by MonZphere" "$view"; then
+            echo "FAIL: $view — falta rodapé 'Developed by MonZphere' (.mnz-footer) antes de ->show()"
+        fi
+    fi
+done
+```
+
+### JS em views/js/ para modules
+```bash
+# Para módulos (não widgets), JS deve estar em views/js/
+if [ -f manifest.json ]; then
+    type=$(python3 -c "import json; print(json.load(open('manifest.json')).get('type','module'))")
+    if [ "$type" = "module" ]; then
+        if [ -d assets/js ]; then
+            echo "WARN: assets/js/ presente em módulo — JS deveria ficar em views/js/*.js.php (apenas widgets usam assets/js)"
+        fi
+        # Ver se views chama includeJsFile com caminho js/
+        for view in views/*.view.php; do
+            [ -f "$view" ] || continue
+            if grep -q "includeJsFile" "$view"; then
+                if ! grep -qE "includeJsFile\(['\"]js/" "$view"; then
+                    echo "WARN: $view — includeJsFile deve apontar para 'js/*.view.js.php'"
+                fi
+            fi
+        done
+    fi
+fi
+```
+
+### i18n stricto
+```bash
+# setTitle, addItem com strings literais devem usar _()
+grep -rn "setTitle(['\"][A-Z]" --include="*.php" | grep -v "_(" | while read line; do
+    echo "WARN: $line — strings devem usar _() (regra MonZphere)"
+done
+```
+
 ## 15. Relatório final
 
 Após executar todos os checks, gere relatório no formato:

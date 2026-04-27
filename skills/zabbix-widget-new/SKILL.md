@@ -6,6 +6,22 @@ allowed-tools: Read, Write, Edit, Glob, Bash
 
 # Criar Widget Zabbix Dashboard
 
+## REGRAS MONZPHERE (OBRIGATÓRIAS)
+
+Aplique antes de qualquer geração de código:
+
+1. **Prefixo CSS `.mnz-`** em TODAS as classes de div/span (ex: `.mnz-widget-problem-top__row`)
+2. **Variáveis CSS** (`var(--bg-color)`, etc.) — nunca hardcoded; suporta blue + dark themes
+3. **i18n com `_()`** em toda string visível
+4. **CProfile** para preferências persistentes (chave: `mnz.<widget_id>.<campo>`)
+5. **CWebUser** para permissões: `CWebUser::checkAccess()`, `CWebUser::getType()`
+6. **JS em `assets/js/class.widget.js`** estendendo `CWidget` (widgets NÃO usam `views/js/`)
+7. **NÃO incluir** rodapé "Developed by MonZphere" — widgets são embedded em dashboards
+
+Referência completa: `docs/MONZPHERE-STANDARDS.md`.
+
+---
+
 Widgets diferem de módulos genéricos: têm estrutura específica, suportam dashboard, e (Zabbix 7.0+) podem fazer broadcast/feedback entre si.
 
 ## 1. Pré-requisitos

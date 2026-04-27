@@ -67,12 +67,42 @@ case "$FILE_PATH" in
         if grep -qE "\\\$_(GET|POST|REQUEST)" "$FILE_PATH"; then
             WARNINGS+=("Acesso direto a \$_GET/\$_POST — use \$this->getInput()")
         fi
+
+        # MonZphere — getUserType direto em vez de CWebUser
+        if grep -qE '\$this->getUserType\(\)' "$FILE_PATH"; then
+            WARNINGS+=("MonZphere: prefira CWebUser::getType() em vez de \$this->getUserType()")
+        fi
+
+        # MonZphere — chave CProfile sem prefixo mnz.
+        if grep -qE "CProfile::(get|update|delete)\(['\"][^m]" "$FILE_PATH" | grep -v "['\"]mnz\\." >/dev/null 2>&1; then
+            WARNINGS+=("MonZphere: chaves CProfile devem prefixar com 'mnz.<modulo>.<campo>'")
+        fi
+
+        # MonZphere — addClass sem prefixo mnz- (e não é constante ZBX_*)
+        if grep -qE "addClass\(['\"][a-z][^'\"]*['\"]" "$FILE_PATH" | grep -v "['\"]mnz-" >/dev/null 2>&1; then
+            : # silencia — muito ruidoso. Validação completa via /zabbix-validate
+        fi
+
+        # MonZphere — view de module deve ter footer "Developed by MonZphere"
+        if [[ "$FILE_PATH" == *"/views/"* ]] && [[ "$FILE_PATH" != *"widget.view.php"* ]]; then
+            if grep -q "CHtmlPage" "$FILE_PATH" 2>/dev/null && ! grep -q "Developed by MonZphere" "$FILE_PATH"; then
+                WARNINGS+=("MonZphere: view de module sem rodapé 'Developed by MonZphere' (.mnz-footer)")
+            fi
+        fi
         ;;
 
     *.css)
         # Cores hardcoded
         if grep -qE "#[0-9a-fA-F]{3,6}|rgba?\(" "$FILE_PATH"; then
             WARNINGS+=("Cores hardcoded — use var(--*) para suportar todos os temas Zabbix")
+        fi
+
+        # MonZphere — classes sem prefixo .mnz-
+        if grep -qE "^\.[a-zA-Z]" "$FILE_PATH" 2>/dev/null; then
+            invalid=$(grep -E "^\.[a-zA-Z]" "$FILE_PATH" | grep -v "^\.mnz-" | head -3)
+            if [ -n "$invalid" ]; then
+                WARNINGS+=("MonZphere: classes CSS devem prefixar com .mnz-")
+            fi
         fi
         ;;
 

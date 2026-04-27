@@ -6,6 +6,31 @@ allowed-tools: Read, Write, Edit, Glob, Bash
 
 # Criar Action (Controller) Zabbix
 
+## REGRAS MONZPHERE (OBRIGATÓRIAS)
+
+Aplique em toda action gerada:
+
+1. **`CWebUser` para permissões** (não `$this->getUserType()` direto):
+   ```php
+   protected function checkPermissions(): bool {
+       if (CWebUser::isGuest()) return false;
+       return CWebUser::getType() >= USER_TYPE_ZABBIX_USER
+           && CWebUser::checkAccess(CRoleHelper::UI_MONITORING_HOSTS);
+   }
+   ```
+2. **`CProfile` para estado persistente** (filtros, paginação) com chave `mnz.<modulo>.<campo>`:
+   ```php
+   $severity = CProfile::get('mnz.host_report.filter.severity', 0);
+   CProfile::update('mnz.host_report.filter.severity', $severity, PROFILE_TYPE_INT);
+   ```
+3. **i18n** — `_()` em mensagens de erro/sucesso, `_s()` em placeholders
+4. **CSRF habilitado** em qualquer action que muta dados (NÃO chame `disableCsrfValidation()` em POST)
+5. Sempre via `API::*->get()` — zero SQL bruto
+
+Referência completa: `docs/MONZPHERE-STANDARDS.md`.
+
+---
+
 Toda interação dinâmica no frontend Zabbix passa por uma `Action` — uma classe que estende `CController`. É o "controller" do MVC.
 
 ## 1. Padrão de fluxo

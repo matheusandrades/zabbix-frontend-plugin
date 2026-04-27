@@ -6,6 +6,7 @@
  */
 
 $table = (new CTableInfo())
+    ->addClass('mnz-{{MODULE_ID}}-table')
     ->setHeader([
         _('Host'),
         _('Status')
@@ -23,7 +24,15 @@ foreach ($data['hosts'] as $host) {
     ]);
 }
 
+$content = (new CDiv($table))->addClass('mnz-{{MODULE_ID}}');
+
+$footer = (new CDiv(_('Developed by MonZphere')))
+    ->addClass('mnz-footer');
+
 (new CHtmlPage())
     ->setTitle(_('{{PAGE_TITLE}}'))
-    ->addItem($table)
+    ->addItem($content)
+    ->addItem($footer)
     ->show();
+
+$this->includeJsFile('js/{{ACTION_KEY}}.view.js.php');

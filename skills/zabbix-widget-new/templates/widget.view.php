@@ -16,6 +16,7 @@ foreach ($data['hosts'] as $host) {
 }
 
 $table = (new CTableInfo())
+    ->addClass('mnz-widget-{{ID_WITH_HYPHENS}}__table')
     ->setHeader([_('Host'), _('Status')])
     ->setNoDataMessage(_('No data found'));
 
